@@ -37,8 +37,23 @@ const starRatingMap: Record<string, string> = {
   FIVE: "5",
 }
 
+interface Reviewer {
+  displayName: string;
+}
+
+interface Review {
+  reviewer?: Reviewer;
+  starRating: string;
+  comment?: string;
+  createTime: string;
+}
+
+interface ReviewData {
+  reviews: Review[];
+}
+
 export default function Home() {
-  const [jsonData, setJsonData] = useState<any>(null)
+  const [jsonData, setJsonData] = useState<ReviewData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
@@ -72,7 +87,7 @@ export default function Home() {
     setProcessingStatus(initialStatus)
 
     // Process each file
-    const combinedData: any = { reviews: [] }
+    const combinedData: ReviewData = { reviews: [] }
     let filesProcessed = 0
 
     Array.from(files).forEach((file) => {
@@ -149,8 +164,7 @@ export default function Home() {
   // Filter reviews based on selected star rating
   const getFilteredReviews = () => {
     if (!jsonData || !jsonData.reviews) return []
-
-    return jsonData.reviews.filter((review: any) => {
+    return jsonData.reviews.filter((review: Review) => {
       if (filterRating === "all") return true
       return review.starRating === filterRating
     })
@@ -159,7 +173,6 @@ export default function Home() {
   // Export data to Excel/CSV
   const exportToExcel = () => {
     if (!jsonData || !jsonData.reviews) return
-
     const filteredReviews = getFilteredReviews()
 
     // Create headers based on selected fields
@@ -178,7 +191,7 @@ export default function Home() {
     // Add headers
     csvContent += headers.join(",") + "\n"
 
-    filteredReviews.forEach((review: any) => {
+    filteredReviews.forEach((review: Review) => {
       const rowData: string[] = []
 
       if (selectedFields.starRating) {
@@ -578,7 +591,7 @@ export default function Home() {
                   <tbody className={`divide-y ${isDarkMode ? "divide-gray-700" : "divide-gray-200"}`}>
                     {getFilteredReviews()
                       .slice(0, 5)
-                      .map((review: any, index: number) => (
+                      .map((review: Review, index: number) => (
                         <tr
                           key={index}
                           className={
